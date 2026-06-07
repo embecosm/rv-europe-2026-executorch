@@ -175,6 +175,9 @@ define_overridable_option(
   EXECUTORCH_BUILD_CADENCE "Build the Cadence DSP backend" BOOL OFF
 )
 define_overridable_option(
+  EXECUTORCH_BUILD_COREV "Build the CORE-V backend" BOOL OFF
+)
+define_overridable_option(
   EXECUTORCH_BUILD_CORTEX_M "Build the Cortex-M backend" BOOL OFF
 )
 define_overridable_option(
