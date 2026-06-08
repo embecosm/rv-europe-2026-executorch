@@ -10,7 +10,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
+import struct
 from typing import final, List, Optional
+from executorch.exir.dialects._ops import ops as exir_ops
 
 from executorch.exir.backend.backend_details import (
     BackendDetails,
@@ -56,5 +58,8 @@ class CoreVBackend(BackendDetails):
         for node in edge_program.graph.nodes:
             if node.op == "call_function":
                 logging.debug(f"Operator to be processed: {node.target}")
+                # logging.debug(f"{node.args[0].meta['val']}")
+                if node.target == exir_ops.edge.aten.add.Tensor:
+                    binary += struct.pack("<I", 1)
 
         return PreprocessResult(processed_bytes=binary)

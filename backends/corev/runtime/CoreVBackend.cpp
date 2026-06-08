@@ -17,17 +17,36 @@ using namespace executorch::runtime;
 
 namespace executorch::backends::corev {
 
+CoreVPayload::CoreVPayload(executorch::runtime::FreeableBuffer* buffer)
+ : Data((uint8_t*)buffer->data()) {}
+
 Result<DelegateHandle*> CoreVBackend::init(
     BackendInitContext& context,
     FreeableBuffer* processed,
     ArrayRef<CompileSpec> compile_specs) const {
-  return nullptr;
+  MemoryAllocator* allocator = context.get_runtime_allocator();
+  CoreVPayload* payload = allocator->allocateInstance<CoreVPayload>();
+  if (payload == nullptr)
+    return Error::MemoryAllocationFailed;
+
+  new (payload) CoreVPayload(processed);
+  return payload;
 }
 
 Error CoreVBackend::execute(
     ET_UNUSED BackendExecutionContext& context,
     DelegateHandle* handle,
     Span<EValue*> args) const {
+  CoreVPayload* payload = static_cast<CoreVPayload*>(handle);
+  if (payload->operatorId == 1)
+    return doAdd(args);
+  else
+    return Error::Ok;
+}
+
+Error CoreVBackend::doAdd(
+    Span<EValue*> args) const {
+  printf ("Doing an 8-bit Tensor Add\n");
   return Error::Ok;
 }
 
@@ -44,6 +63,6 @@ bool CoreVBackend::is_available() const {
 namespace {
 auto cls = executorch::backends::corev::CoreVBackend();
 executorch::runtime::Backend backend{"CoreVBackend", &cls};
-static auto success_with_compiler =
+volatile static auto success_with_compiler =
     executorch::runtime::register_backend(backend);
 } // namespace

@@ -28,6 +28,7 @@ from torch.fx.passes.operator_support import OperatorSupportBase
 
 # The operators we currently support
 SupportedOperatorsList = [
+    exir_ops.edge.aten.add.Tensor,
     exir_ops.edge.aten.convolution.default,
     exir_ops.edge.quantized_decomposed.quantize_per_tensor.default,
     exir_ops.edge.quantized_decomposed.dequantize_per_tensor.default,

@@ -23,11 +23,23 @@ class AddModule(torch.nn.Module):
         torch.rand(5, dtype=torch.float32),
         torch.rand(5, dtype=torch.float32),
     )
-    calibration_data = (
-        torch.randn(1, 5),
-        torch.randn(1, 5),
+    calibration_data = example_input
+
+class Add8Module(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x, y):
+        return x + y
+
+    can_delegate = True
+    example_input = (
+        torch.randint(0, 255, (5,), dtype=torch.uint8),
+        torch.randint(0, 255, (5,), dtype=torch.uint8),
     )
+    calibration_data = example_input
 
 COREV_MODELS = {
     "add": AddModule,
+    "add8": Add8Module,
 }
