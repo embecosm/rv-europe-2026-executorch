@@ -677,6 +677,11 @@ if(EXECUTORCH_BUILD_COREML)
   list(APPEND _executorch_backends coremldelegate)
 endif()
 
+if(EXECUTORCH_BUILD_COREV)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backends/corev)
+  list(APPEND _executorch_backends corevdelegate)
+endif()
+
 if(EXECUTORCH_BUILD_MPS)
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/backends/apple/mps)
   list(APPEND _executorch_backends mpsdelegate)
