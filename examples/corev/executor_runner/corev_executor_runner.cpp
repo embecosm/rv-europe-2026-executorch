@@ -61,6 +61,7 @@ using executorch::runtime::MethodMeta;
 using executorch::runtime::Program;
 using executorch::runtime::Result;
 using executorch::runtime::Span;
+using executorch::aten::Tensor;
 
 #include <stdio.h>
 
@@ -168,15 +169,23 @@ int main() {
   // Set up the inputs and run the model.
   for (uint32_t i = 0; i < FLAGS_num_executions; i++) {
     ET_LOG(Debug, "Preparing inputs.");
-    // Allocate input tensors and set all of their elements to 1. The `inputs`
-    // variable owns the allocated memory and must live past the last call to
-    // `execute()`.
+    // Allocate input tensors and set all of their elements to desired
+    // values. The `inputs` variable owns the allocated memory and must live
+    // past the last call to `execute()`.
     //
     // NOTE: we have to re-prepare input tensors on every execution
     // because inputs whose space gets reused by memory planning (if
     // any such inputs exist) will not be preserved for the next
     // execution.
-    auto inputs = executorch::extension::prepare_input_tensors(*method);
+    auto isz = method_meta->input_tensor_meta(0)->sizes()[0];
+    char *arr1 = new char[isz];
+    char *arr2 = new char[isz];
+    for (size_t i = 0; i < isz; i++) {
+      arr1[i] = i % 128;
+      arr2[i] = i % 128;
+    }
+    auto inputs = executorch::extension::prepare_input_tensors(
+        *method, {}, {{arr1, isz}, {arr2, isz}});
     ET_CHECK_MSG(
         inputs.ok(),
         "Could not prepare inputs: 0x%" PRIx32,
@@ -198,10 +207,17 @@ int main() {
   // Horrible kludge, because ET logging is too big!
   printf("Model executed successfully %" PRIu32 " time(s).\n",
 	 FLAGS_num_executions);
+  // Print the outputs.  Change the #if 0 to enable this.
+#if 0
   std::vector<EValue> outputs(method->outputs_size());
   ET_LOG(Info, "%zu outputs: ", outputs.size());
   Error status = method->get_outputs(outputs.data(), outputs.size());
+  Tensor& ot = outputs.data()[0].toTensor();
+  const uint8_t * res = static_cast<const uint8_t *>(ot.const_data_ptr());
+  for(int i = 0; i < ot.numel(); i++)
+    printf("res[%d] = %d\n", i, res[i]);
   ET_CHECK(status == Error::Ok);
+#endif
 
   return 0;
 }
