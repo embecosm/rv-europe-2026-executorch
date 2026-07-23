@@ -20,6 +20,12 @@ using namespace executorch::runtime;
 
 namespace executorch::backends::corev {
 
+struct CoreVPayload {
+  CoreVPayload(executorch::runtime::FreeableBuffer* buffer);
+  uint32_t operatorId;
+  uint8_t *Data;
+};
+
 class CoreVBackend final : public BackendInterface {
 public:
   Result<DelegateHandle*> init(
@@ -33,9 +39,16 @@ public:
       DelegateHandle* handle,
       Span<EValue*> args) const override;
 
+  Error doAdd(
+       Span<EValue*> args) const;
+
   void destroy(DelegateHandle* handle) const override;
 
   bool is_available() const override;
+
+private:
+  Error doAdd(
+       Span<EValue*> args) const;
 };
 
 } // namespace executorch::backends::corev

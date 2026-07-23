@@ -28,6 +28,7 @@ from torch.fx.passes.operator_support import OperatorSupportBase
 
 # The operators we currently support
 SupportedOperatorsList = [
+    exir_ops.edge.aten.add.Tensor,
 ]
 
 class CoreVSupportedOperators(OperatorSupportBase):

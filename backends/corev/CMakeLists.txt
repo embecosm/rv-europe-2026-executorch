@@ -43,6 +43,9 @@ if(EXECUTORCH_BUILD_COREV_RUNNER)
     program_schema
     common_schema
     extension_runner_util
+    "-Wl,--whole-archive"
+    corev_delegate
+    "-Wl,--no-whole-archive"
   )
   target_include_directories(executorch INTERFACE ${_common_include_directories})
 

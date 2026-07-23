@@ -10,7 +10,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
+import struct
 from typing import final, List, Optional
+from executorch.exir.dialects._ops import ops as exir_ops
+from torch import uint8 as torch_uint8
 
 from executorch.exir.backend.backend_details import (
     BackendDetails,
@@ -52,4 +55,21 @@ class CoreVBackend(BackendDetails):
     ) -> PreprocessResult:
         logging.info("CoreVBackend::preprocess")
         binary = bytes()
+
+        for node in edge_program.graph.nodes:
+            if node.op == "call_function":
+                logging.debug(f"Operator to be processed: {node.target}")
+                if node.target == exir_ops.edge.aten.add.Tensor:
+                    # We have an add, but can only delegate if all the
+                    # arguments are torch.uint8
+                    can_delegate = True
+                    for a in node.args:
+                        if a.meta['val'].dtype != torch_uint8:
+                            can_delegate = False
+                    if can_delegate:
+                        logging.info("CoreVBackend: 8-bit add delegated")
+                    # Tag with a little endian integer (since RISC-V is
+                    # little-endian)
+                    binary += struct.pack("<I", 1)
+
         return PreprocessResult(processed_bytes=binary)
